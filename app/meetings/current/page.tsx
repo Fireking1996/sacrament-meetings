@@ -8,7 +8,7 @@ async function getMeetingByDate(
   const baseUrl = await getApiBaseUrl();
 
 const response = await fetch(
-  `${baseUrl}/api/meetings/${date}`,
+  `${baseUrl}/api/meetings?date=${date}`,
   {
     cache: 'no-store',
   }
