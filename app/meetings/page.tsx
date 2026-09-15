@@ -1,13 +1,16 @@
 import MeetingCard from '@/components/MeetingCard';
 import { SacramentMeeting } from '@/lib/types';
+import { getApiBaseUrl } from '@/lib/api-url';
 
 async function getMeetings(): Promise<SacramentMeeting[]> {
-  const response = await fetch(
-    'http://localhost:3000/api/meetings',
-    {
-      cache: 'no-store',
-    }
-  );
+ const baseUrl = await getApiBaseUrl();
+
+const response = await fetch(
+  `${baseUrl}/api/meetings`,
+  {
+    cache: 'no-store',
+  }
+);
 
   if (!response.ok) {
     throw new Error('Failed to fetch meetings');

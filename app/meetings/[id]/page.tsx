@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import MeetingDetail from '@/components/MeetingDetail';
 import { SacramentMeeting } from '@/lib/types';
+import { getApiBaseUrl } from '@/lib/api-url';
 
 interface MeetingPageProps {
   params: Promise<{ id: string }>;
@@ -9,12 +10,14 @@ interface MeetingPageProps {
 async function getMeeting(
   id: string
 ): Promise<SacramentMeeting> {
-  const response = await fetch(
-    `http://localhost:3000/api/meetings/${id}`,
-    {
-      cache: 'no-store',
-    }
-  );
+  const baseUrl = await getApiBaseUrl();
+
+const response = await fetch(
+  `${baseUrl}/api/meetings/${id}`,
+  {
+    cache: 'no-store',
+  }
+);
 
   if (!response.ok) {
     throw new Error('Meeting not found');
