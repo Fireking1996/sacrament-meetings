@@ -1,200 +1,130 @@
-import { SacramentMeeting } from './types';
+import { neon } from '@neondatabase/serverless';
+import type { SacramentMeeting } from './types';
 
-const meetings: SacramentMeeting[] = [
-  {
-    id: 1,
-    date: '2026-08-16',
-    meetingType: 'regular',
-    presiding: 'Bishop Daniel Carter',
-    conducting: 'Brother Michael Adams',
-    announcements: [
-      'Youth activity this Wednesday at 6:30 PM.',
-      'Relief Society activity next Saturday.'
-    ],
-    openingHymn: {
-      number: 227,
-      title: 'There Is Sunshine in My Soul Today'
-    },
-    openingPrayer: 'Brother James Wilson',
-    wardBusiness: [
-      {
-        description: 'Sustaining new Primary teachers.'
-      }
-    ],
-    stakeBusiness: false,
-    sacramentHymn: {
-      number: 169,
-      title: 'As Now We Take the Sacrament'
-    },
-    speakers: [
-      {
-        name: 'Sister Emily Carter',
-        topic: 'Following Jesus Christ',
-        type: 'speaker'
-      },
-      {
-        name: 'Brother Thomas Reed',
-        topic: 'Serving in the Ward',
-        type: 'speaker'
-      }
-    ],
-    closingHymn: {
-      number: 85,
-      title: 'How Firm a Foundation'
-    },
-    closingPrayer: 'Brother David Young'
-  },
-  {
-    id: 2,
-    date: '2026-08-23',
-    meetingType: 'testimony',
-    presiding: 'Bishop Daniel Carter',
-    conducting: 'Sister Rachel Adams',
-    announcements: [
-      'Temple recommend interviews are available this week.'
-    ],
-    openingHymn: {
-      number: 2,
-      title: 'The Spirit of God'
-    },
-    openingPrayer: 'Sister Laura Smith',
-    wardBusiness: [],
-    stakeBusiness: false,
-    sacramentHymn: {
-      number: 193,
-      title: 'I Stand All Amazed'
-    },
-    speakers: [],
-    closingHymn: {
-      number: 219,
-      title: 'Because I Have Been Given Much'
-    },
-    closingPrayer: 'Brother John Miller'
-  },
-  {
-    id: 3,
-    date: '2026-08-30',
-    meetingType: 'stake',
-    presiding: 'President Robert Harris',
-    conducting: 'Brother Mark Lewis',
-    announcements: [
-      'Stake youth conference registration is now open.'
-    ],
-    openingHymn: {
-      number: 85,
-      title: 'How Firm a Foundation'
-    },
-    openingPrayer: 'Sister Rebecca Hall',
-    wardBusiness: [],
-    stakeBusiness: true,
-    sacramentHymn: {
-      number: 169,
-      title: 'As Now We Take the Sacrament'
-    },
-    speakers: [
-      {
-        name: 'President Robert Harris',
-        topic: 'Strengthening Families',
-        type: 'speaker'
-      },
-      {
-        name: 'Sister Amanda Brooks',
-        topic: 'Faith in Jesus Christ',
-        type: 'speaker'
-      }
-    ],
-    closingHymn: {
-      number: 270,
-      title: 'I’ll Go Where You Want Me to Go'
-    },
-    closingPrayer: 'Brother Peter Clark'
-  },
-  {
-    id: 4,
-    date: '2026-09-06',
-    meetingType: 'regular',
-    presiding: 'Bishop Daniel Carter',
-    conducting: 'Brother Michael Adams',
-    announcements: [
-      'Ward picnic will be held next Sunday after meetings.',
-      'Please remember to sign up for ministering interviews.'
-    ],
-    openingHymn: {
-      number: 30,
-      title: 'Come, Come, Ye Saints'
-    },
-    openingPrayer: 'Brother James Wilson',
-    wardBusiness: [
-      {
-        description: 'Sustaining new ministering assignments.'
-      }
-    ],
-    stakeBusiness: false,
-    sacramentHymn: {
-      number: 169,
-      title: 'As Now We Take the Sacrament'
-    },
-    speakers: [
-      {
-        name: 'Brother Daniel Green',
-        topic: 'Covenants and Discipleship',
-        type: 'speaker'
-      },
-      {
-        name: 'Sister Hannah White',
-        topic: 'Finding Peace Through the Savior',
-        type: 'speaker'
-      }
-    ],
-    closingHymn: {
-      number: 239,
-      title: 'Choose the Right'
-    },
-    closingPrayer: 'Sister Rachel Adams'
-  },
-  {
-    id: 5,
-    date: '2026-09-13',
-    meetingType: 'general',
-    presiding: 'Bishop Daniel Carter',
-    conducting: 'Sister Rachel Adams',
-    announcements: [
-      'General conference broadcast will be available in the meetinghouse.'
-    ],
-    openingHymn: {
-      number: 227,
-      title: 'There Is Sunshine in My Soul Today'
-    },
-    openingPrayer: 'Brother David Young',
-    wardBusiness: [],
-    stakeBusiness: false,
-    sacramentHymn: {
-      number: 193,
-      title: 'I Stand All Amazed'
-    },
-    speakers: [
-      {
-        name: 'Brother Michael Adams',
-        topic: 'Hear Him',
-        type: 'speaker'
-      }
-    ],
-    closingHymn: {
-      number: 219,
-      title: 'Because I Have Been Given Much'
-    },
-    closingPrayer: 'Sister Laura Smith'
-  }
-];
+const sql = neon(process.env.DATABASE_URL!);
 
-export function getMeetings(date?: string | null): SacramentMeeting[] {
-  if (!date) {
-    return meetings;
-  }
+const ITEMS_PER_PAGE = 5;
 
-  return meetings.filter((meeting) => meeting.date === date);
+export async function getMeetings(
+  query: string = '',
+  currentPage: number = 1
+): Promise<SacramentMeeting[]> {
+  const searchTerm = `%${query}%`;
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  const rows = await sql`
+    SELECT
+      id,
+      to_char(date, 'YYYY-MM-DD') AS "date",
+      meeting_type                AS "meetingType",
+      presiding,
+      conducting,
+      announcements,
+      opening_hymn                AS "openingHymn",
+      opening_prayer              AS "openingPrayer",
+      ward_business               AS "wardBusiness",
+      stake_business              AS "stakeBusiness",
+      sacrament_hymn              AS "sacramentHymn",
+      speakers,
+      closing_hymn                AS "closingHymn",
+      closing_prayer              AS "closingPrayer"
+    FROM meetings
+    WHERE
+      presiding ILIKE ${searchTerm}
+      OR conducting ILIKE ${searchTerm}
+      OR meeting_type ILIKE ${searchTerm}
+      OR speakers::text ILIKE ${searchTerm}
+    ORDER BY date DESC
+    LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+  `;
+
+  return rows as unknown as SacramentMeeting[];
 }
 
-export function getMeetingById(id: number): SacramentMeeting | undefined {
-  return meetings.find((meeting) => meeting.id === id);
+export async function getMeetingsTotalPages(
+  query: string = ''
+): Promise<number> {
+  const searchTerm = `%${query}%`;
+
+  const rows = await sql`
+    SELECT COUNT(*) FROM meetings
+    WHERE
+      presiding ILIKE ${searchTerm}
+      OR conducting ILIKE ${searchTerm}
+      OR meeting_type ILIKE ${searchTerm}
+      OR speakers::text ILIKE ${searchTerm}
+  `;
+
+  return Math.ceil(Number(rows[0].count) / ITEMS_PER_PAGE);
+}
+
+export async function getMeetingById(
+  id: number
+): Promise<SacramentMeeting | null> {
+  const rows = await sql`
+    SELECT
+      id,
+      to_char(date, 'YYYY-MM-DD') AS "date",
+      meeting_type                AS "meetingType",
+      presiding,
+      conducting,
+      announcements,
+      opening_hymn                AS "openingHymn",
+      opening_prayer              AS "openingPrayer",
+      ward_business               AS "wardBusiness",
+      stake_business              AS "stakeBusiness",
+      sacrament_hymn              AS "sacramentHymn",
+      speakers,
+      closing_hymn                AS "closingHymn",
+      closing_prayer              AS "closingPrayer"
+    FROM meetings
+    WHERE id = ${id}
+  `;
+
+  return (rows[0] as unknown as SacramentMeeting) ?? null;
+}
+
+export async function getMeetingsByDate(
+  date: string
+): Promise<SacramentMeeting[]> {
+  const rows = await sql`
+    SELECT
+      id,
+      to_char(date, 'YYYY-MM-DD') AS "date",
+      meeting_type                AS "meetingType",
+      presiding,
+      conducting,
+      announcements,
+      opening_hymn                AS "openingHymn",
+      opening_prayer              AS "openingPrayer",
+      ward_business               AS "wardBusiness",
+      stake_business              AS "stakeBusiness",
+      sacrament_hymn              AS "sacramentHymn",
+      speakers,
+      closing_hymn                AS "closingHymn",
+      closing_prayer              AS "closingPrayer"
+    FROM meetings
+    WHERE date = ${date}
+    ORDER BY date DESC
+  `;
+
+  return rows as unknown as SacramentMeeting[];
+}
+
+// Mutation stubs — will be wired to the database in Week 04
+export async function addMeeting(
+  data: Omit<SacramentMeeting, 'id'>
+): Promise<SacramentMeeting> {
+  throw new Error('addMeeting: database implementation coming in Week 04');
+}
+
+export async function updateMeeting(
+  id: number,
+  updates: Partial<SacramentMeeting>
+): Promise<SacramentMeeting | null> {
+  throw new Error('updateMeeting: database implementation coming in Week 04');
+}
+
+export async function deleteMeeting(id: number): Promise<boolean> {
+  throw new Error('deleteMeeting: database implementation coming in Week 04');
 }
