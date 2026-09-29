@@ -1,3 +1,8 @@
+'use client';
+
+import MeetingForm from '@/components/meetings/MeetingForm';
+import { createMeeting } from '@/lib/actions';
+
 export default function NewMeetingPage() {
   return (
     <section>
@@ -9,9 +14,11 @@ export default function NewMeetingPage() {
         Create Meeting
       </h1>
 
-      <p className="mt-4 text-gray-600">
-        Coming in Week 04.
-      </p>
+      <MeetingForm
+        action={createMeeting}
+        submitLabel="Create Meeting"
+        pendingLabel="Creating..."
+      />
     </section>
   );
 }

@@ -1,4 +1,6 @@
 import Link from 'next/link';
+
+import { deleteMeeting } from '@/lib/actions';
 import { SacramentMeeting } from '@/lib/types';
 
 interface MeetingCardProps {
@@ -14,6 +16,8 @@ export default function MeetingCard({ meeting }: MeetingCardProps) {
     day: 'numeric',
     year: 'numeric',
   });
+
+  const deleteAction = deleteMeeting.bind(null, meeting.id);
 
   return (
     <article className="rounded-lg border bg-white p-6 shadow-sm transition hover:shadow-md">
@@ -44,13 +48,29 @@ export default function MeetingCard({ meeting }: MeetingCardProps) {
         </p>
       </div>
 
-      <div className="mt-5">
+      <div className="mt-5 flex flex-wrap gap-3">
         <Link
           href={`/meetings/${meeting.id}`}
-          className="inline-block rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+          className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
         >
           View Meeting
         </Link>
+
+        <Link
+          href={`/meetings/${meeting.id}/edit`}
+          className="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Edit
+        </Link>
+
+        <form action={deleteAction}>
+          <button
+            type="submit"
+            className="rounded-md border border-red-300 px-4 py-2 font-medium text-red-700 hover:bg-red-50"
+          >
+            Delete
+          </button>
+        </form>
       </div>
     </article>
   );
