@@ -1,7 +1,15 @@
+import type { Metadata } from 'next';
+
 import MeetingCard from '@/components/MeetingCard';
 import { getMeetings, getMeetingsTotalPages } from '@/lib/meetings-db';
 import { MeetingSearch } from '@/components/MeetingSearch';
 import { Pagination } from '@/components/Pagination';
+
+export const metadata: Metadata = {
+  title: 'Sacrament Meetings | Cedar Grove Ward',
+  description:
+    'View current and past sacrament meeting programs for Cedar Grove Ward.',
+};
 
 export default async function MeetingsPage(props: {
   searchParams?: Promise<{ query?: string; page?: string }>;

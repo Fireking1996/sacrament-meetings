@@ -1,5 +1,7 @@
 'use server';
 
+import { authOptions } from '@/auth';
+import { getServerSession } from 'next-auth';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
@@ -44,6 +46,11 @@ export async function createMeeting(
   prevState: State,
   formData: FormData
 ): Promise<State> {
+      const session = await getServerSession(authOptions);
+
+  if (!session) {
+    throw new Error('Unauthorized');
+  }
   const validatedFields = MeetingFormSchema.safeParse(
     Object.fromEntries(formData.entries())
   );
@@ -112,6 +119,11 @@ export async function updateMeeting(
   prevState: State,
   formData: FormData
 ): Promise<State> {
+     const session = await getServerSession(authOptions);
+
+  if (!session) {
+    throw new Error('Unauthorized');
+  }
   const validatedFields = MeetingFormSchema.safeParse(
     Object.fromEntries(formData.entries())
   );
@@ -186,6 +198,11 @@ export async function deleteMeeting(
   id: number,
   _formData: FormData
 ): Promise<void> {
+      const session = await getServerSession(authOptions);
+
+  if (!session) {
+    throw new Error('Unauthorized');
+  }
   void _formData;
 
   try {

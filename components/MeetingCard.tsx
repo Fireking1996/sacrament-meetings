@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { getServerSession } from 'next-auth';
 
+import { authOptions } from '@/auth';
 import { deleteMeeting } from '@/lib/actions';
 import { SacramentMeeting } from '@/lib/types';
 
@@ -7,7 +9,9 @@ interface MeetingCardProps {
   meeting: SacramentMeeting;
 }
 
-export default function MeetingCard({ meeting }: MeetingCardProps) {
+export default async function MeetingCard({ meeting }: MeetingCardProps) {
+  const session = await getServerSession(authOptions);
+
   const formattedDate = new Date(
     `${meeting.date}T12:00:00`
   ).toLocaleDateString('en-US', {
@@ -56,21 +60,25 @@ export default function MeetingCard({ meeting }: MeetingCardProps) {
           View Meeting
         </Link>
 
-        <Link
-          href={`/meetings/${meeting.id}/edit`}
-          className="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
-        >
-          Edit
-        </Link>
+        {session && (
+          <>
+            <Link
+              href={`/meetings/${meeting.id}/edit`}
+              className="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Edit
+            </Link>
 
-        <form action={deleteAction}>
-          <button
-            type="submit"
-            className="rounded-md border border-red-300 px-4 py-2 font-medium text-red-700 hover:bg-red-50"
-          >
-            Delete
-          </button>
-        </form>
+            <form action={deleteAction}>
+              <button
+                type="submit"
+                className="rounded-md border border-red-300 px-4 py-2 font-medium text-red-700 hover:bg-red-50"
+              >
+                Delete
+              </button>
+            </form>
+          </>
+        )}
       </div>
     </article>
   );
